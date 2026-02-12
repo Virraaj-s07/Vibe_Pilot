@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIBE-PILOT v2.0 // AI Command Center</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Three.js for 3D Background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP for High-Performance Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+
+<body>
+    <!-- 3D Background Container -->
+    <div id="canvas-container"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></div>
+
+    <!-- Background elements (Original Orbs kept for overlay effect) -->
+    <div class="glow-orb-1" style="z-index: -1; opacity: 0.5;"></div>
+    <div class="glow-orb-2" style="z-index: -1; opacity: 0.5;"></div>
+    <div class="matrix-container" id="matrixRain" style="z-index: -1; opacity: 0.3;"></div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Saved Ideas Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span>📁 Saved Ideas</span>
+            <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+        </div>
+        <div class="sidebar-content" id="savedIdeasList">
+            <div class="sidebar-empty">No saved ideas yet</div>
+        </div>
+        <div class="sidebar-footer">
+            <button class="sidebar-clear-btn" onclick="clearSavedIdeas()">Clear All</button>
+        </div>
+    </aside>
+
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+        <span>☰</span>
+    </button>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Back Button -->
+                <button id="backBtn" onclick="goBack()"
+                    style="display: none; padding: 0.5rem 0.75rem; background: transparent; border: 1px solid var(--border-subtle); border-radius: 2px; color: var(--text-secondary); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase; transition: all 0.2s;">
+                    ← Back
+                </button>
+
+                <!-- Home Button -->
+                <button id="homeBtn" onclick="goHome()"
+                    style="display: none; padding: 0.5rem 0.75rem; background: transparent; border: 1px solid var(--border-subtle); border-radius: 2px; color: var(--text-secondary); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase; transition: all 0.2s;">
+                    ⌂ Home
+                </button>
+
+                <!-- Sidebar Toggle Button in Header -->
+                <button id="sidebarHeaderBtn" onclick="toggleSidebar()"
+                    style="padding: 0.5rem 0.75rem; background: transparent; border: 1px solid var(--border-subtle); border-radius: 2px; color: var(--text-secondary); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase; transition: all 0.2s;">
+                    ☰ Ideas
+                </button>
+
+                <div class="logo">
+                    <div class="status-dot"></div>
+                    <span>Vibe_Pilot</span>
+                </div>
+            </div>
+
+            <div id="systemIndicator"
+                style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--accent-cyan); font-family: 'JetBrains Mono'; text-transform: uppercase;">
+                <div class="status-dot"></div>
+                <span>SYSTEM ONLINE</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main container -->
+    <div class="container" id="welcomeContainer">
+        <!-- Welcome/Input Screen -->
+        <div class="welcome" id="welcomeScreen">
+            <div style="text-align: center; margin-bottom: 3rem; max-width: 800px;">
+                <div
+                    style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.15em;">
+                    // Initialize Command
+                </div>
+
+                <h1
+                    style="font-family: 'Space Mono', monospace; font-size: 3rem; font-weight: 700; margin-bottom: 1rem; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Vibe_Pilot
+                </h1>
+
+                <div class="terminal-quote">
+                    "Why waste your credits when you can engineer precision?<br />
+                    One perfect blueprint. Zero agent drift. Complete context."
+                </div>
+            </div>
+
+            <!-- Example cards -->
+            <div class="example-grid">
+                <div class="example-card"
+                    onclick="useExample('An AI-powered fitness coach that creates personalized workout plans')">
+                    <div
+                        style="font-size: 0.6875rem; color: var(--accent-cyan); margin-bottom: 0.5rem; font-weight: 600;">
+                        &gt; EXAMPLE_01
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">
+                        An AI-powered fitness coach that creates personalized workout plans
+                    </div>
+                </div>
+                <div class="example-card"
+                    onclick="useExample('A marketplace for freelance 3D artists to sell game-ready assets')">
+                    <div
+                        style="font-size: 0.6875rem; color: var(--accent-cyan); margin-bottom: 0.5rem; font-weight: 600;">
+                        &gt; EXAMPLE_02
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">
+                        A marketplace for freelance 3D artists to sell game-ready assets
+                    </div>
+                </div>
+                <div class="example-card"
+                    onclick="useExample('A browser extension that summarizes YouTube videos using AI')">
+                    <div
+                        style="font-size: 0.6875rem; color: var(--accent-cyan); margin-bottom: 0.5rem; font-weight: 600;">
+                        &gt; EXAMPLE_03
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">
+                        A browser extension that summarizes YouTube videos using AI
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input terminal -->
+            <div class="input-terminal">
+                <div class="input-container">
+                    <span style="color: var(--accent-cyan); font-size: 0.9375rem; margin-top: 0.5rem;">&gt;</span>
+                    <textarea class="input-field" id="userInput" placeholder="Enter your SaaS idea..."
+                        rows="1"></textarea>
+                    <button class="execute-btn" id="analyzeBtn">
+                        Analyze
+                    </button>
+                </div>
+            </div>
+
+            <p
+                style="margin-top: 2rem; color: var(--text-muted); font-size: 0.8125rem; text-align: center; max-width: 600px;">
+                Vibe-Pilot will analyze your idea across 6 pillars and generate a complete development blueprint.
+            </p>
+        </div>
+
+        <!-- Processing overlay -->
+        <div id="processingOverlay" class="processing-overlay hidden">
+            <div style="text-align: center;">
+                <div class="processing-bars">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+                <p id="processingText"
+                    style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 1rem; min-height: 40px;">
+                    Processing...</p>
+                <p id="processingSubtext"
+                    style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.5rem; font-style: italic;"></p>
+            </div>
+        </div>
+
+        <!-- Analysis Screen -->
+        <div id="analysisScreen" class="analysis-view hidden">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <h2 style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700;">
+                    FEASIBILITY ANALYSIS
+                </h2>
+            </div>
+
+            <!-- Overall score -->
+            <div
+                style="background: var(--bg-surface); border: 2px solid var(--border-subtle); border-radius: 8px; padding: 2rem; margin-bottom: 2rem; text-align: center;">
+                <div
+                    style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">
+                    Overall Score
+                </div>
+                <div id="overallScore" class="score-circle"></div>
+                <div id="verdict"
+                    style="display: inline-block; padding: 0.5rem 1.5rem; border-radius: 4px; font-weight: 700; font-size: 0.875rem; text-transform: uppercase;">
+                </div>
+            </div>
+
+            <!-- Pillars grid -->
+            <div id="pillarsGrid" class="pillar-grid"></div>
+
+            <!-- Next button -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <button onclick="showBlueprint()"
+                    style="padding: 1rem 2rem; background: var(--accent-cyan); border: none; border-radius: 4px; color: var(--bg-void); font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s;">
+                    Continue to Blueprint →
+                </button>
+            </div>
+        </div>
+
+        <!-- Blueprint Screen -->
+        <div id="blueprintScreen" class="analysis-view hidden">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <div
+                    style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.15em;">
+                    // Technical Architecture
+                </div>
+                <h2 style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700;">
+                    BLUEPRINT GENERATED
+                </h2>
+            </div>
+
+            <!-- Tech Stack Section -->
+            <div
+                style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 2rem; margin-bottom: 2rem;">
+                <div
+                    style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+                    <h3
+                        style="font-family: 'Space Mono', monospace; font-size: 1.25rem; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em;">
+                        Tech Stack
+                    </h3>
+                    <button onclick="copyTechStack()"
+                        style="padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border-subtle); border-radius: 2px; color: var(--text-secondary); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase;">
+                        Copy
+                    </button>
+                </div>
+                <div id="techStackGrid"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                </div>
+            </div>
+
+            <!-- Pricing Model Section -->
+            <div
+                style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 2rem; margin-bottom: 2rem;">
+                <div
+                    style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+                    <h3
+                        style="font-family: 'Space Mono', monospace; font-size: 1.25rem; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em;">
+                        Pricing Model
+                    </h3>
+                </div>
+                <div id="pricingTiers"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                </div>
+                <div id="pricingMeta"
+                    style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-subtle);"></div>
+            </div>
+
+            <!-- MVP Scope -->
+            <div
+                style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-left: 3px solid var(--accent-purple); border-radius: 4px; padding: 2rem; margin-bottom: 2rem;">
+                <h3
+                    style="font-family: 'Space Mono', monospace; font-size: 1rem; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">
+                    MVP Scope
+                </h3>
+                <ul id="mvpScope" style="list-style: none; padding: 0;"></ul>
+            </div>
+
+            <!-- Next button -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <button onclick="showUserFlow()"
+                    style="padding: 1rem 2rem; background: var(--accent-cyan); border: none; border-radius: 4px; color: var(--bg-void); font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s;">
+                    Continue to User Flow →
+                </button>
+            </div>
+        </div>
+
+        <!-- User Flow Screen -->
+        <div id="flowScreen" class="analysis-view hidden">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <div
+                    style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.15em;">
+                    // User Journey Mapping
+                </div>
+                <h2 style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700;">
+                    USER FLOW ARCHITECTURE
+                </h2>
+                <p id="journeyNarrative"
+                    style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 1rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                </p>
+            </div>
+
+            <!-- Flow Canvas -->
+            <div id="flowCanvas"
+                style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 3rem; margin-bottom: 2rem; min-height: 400px;">
+            </div>
+
+            <!-- Next button -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <button onclick="showRoadmap()"
+                    style="padding: 1rem 2rem; background: var(--accent-cyan); border: none; border-radius: 4px; color: var(--bg-void); font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s;">
+                    Continue to Roadmap →
+                </button>
+            </div>
+        </div>
+
+        <!-- Roadmap Screen -->
+        <div id="roadmapScreen" class="analysis-view hidden">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <div
+                    style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.15em;">
+                    // Development Roadmap
+                </div>
+                <h2 style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700;">
+                    ROADMAP BOARD
+                </h2>
+            </div>
+
+            <!-- Progress Stats -->
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div
+                    style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 1.5rem; text-align: center;">
+                    <div
+                        style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                        Total Tasks</div>
+                    <div id="totalTasks"
+                        style="font-size: 2rem; font-weight: 700; color: var(--accent-cyan); font-family: 'Space Mono', monospace;">
+                        0</div>
+                </div>
+                <div
+                    style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 1.5rem; text-align: center;">
+                    <div
+                        style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                        Completed</div>
+                    <div id="completedTasks"
+                        style="font-size: 2rem; font-weight: 700; color: var(--accent-purple); font-family: 'Space Mono', monospace;">
+                        0</div>
+                </div>
+                <div
+                    style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 1.5rem; text-align: center;">
+                    <div
+                        style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                        Progress</div>
+                    <div id="progressPercent"
+                        style="font-size: 2rem; font-weight: 700; color: var(--accent-cyan); font-family: 'Space Mono', monospace;">
+                        0%</div>
+                </div>
+            </div>
+
+            <!-- Roadmap Board -->
+            <div id="roadmapColumns"
+                style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;"></div>
+
+            <!-- Next button -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <button onclick="showExport()"
+                    style="padding: 1rem 2rem; background: var(--accent-cyan); border: none; border-radius: 4px; color: var(--bg-void); font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s;">
+                    Continue to Memory Bank →
+                </button>
+            </div>
+        </div>
+
+        <!-- Export/Memory Bank Screen -->
+        <div id="exportScreen" class="analysis-view hidden">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <div
+                    style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.15em;">
+                    // Context Archive System
+                </div>
+                <h2 style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700;">
+                    MEMORY BANK EXPORT
+                </h2>
+                <p
+                    style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 1rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    Download your complete project context as .md files. Upload to Claude Projects, Cursor, or any AI
+                    agent for instant project understanding.
+                </p>
+            </div>
+
+            <!-- File Preview Grid -->
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+                <div
+                    style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.5rem;">
+                    <div
+                        style="font-size: 0.875rem; font-weight: 600; color: var(--accent-cyan); margin-bottom: 0.5rem;">
+                        📋 projectBrief.md</div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Complete vision, 6-pillar
+                        analysis, and feasibility verdict</p>
+                </div>
+                <div
+                    style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.5rem;">
+                    <div
+                        style="font-size: 0.875rem; font-weight: 600; color: var(--accent-cyan); margin-bottom: 0.5rem;">
+                        🏗️ techContext.md</div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Full tech stack, architecture
+                        decisions, and packages</p>
+                </div>
+                <div
+                    style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.5rem;">
+                    <div
+                        style="font-size: 0.875rem; font-weight: 600; color: var(--accent-cyan); margin-bottom: 0.5rem;">
+                        ⚡ goldenPrompt.md</div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Copy-paste ready prompt for AI
+                        coding agents</p>
+                </div>
+            </div>
+
+            <!-- Golden Prompt Section -->
+            <div
+                style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 2.5rem; margin-bottom: 3rem; position: relative;">
+                <div
+                    style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="color: var(--accent-cyan); font-size: 1.25rem;">⚡</span>
+                        <h3
+                            style="font-family: 'Space Mono', monospace; font-size: 1.125rem; color: var(--text-primary); text-transform: uppercase;">
+                            The Golden Prompt
+                        </h3>
+                    </div>
+                    <button class="btn-copy" onclick="copyToClipboard('goldenPromptContent')">COPY PROMPT</button>
+                </div>
+
+                <div style="background: #050510; border: 1px solid var(--border-subtle); border-radius: 4px; padding: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; line-height: 1.6; max-height: 400px; overflow-y: auto; color: var(--text-secondary); white-space: pre-wrap;"
+                    id="goldenPromptContent"></div>
+            </div>
+
+            <!-- Download Button -->
+            <div style="text-align: center;">
+                <button onclick="downloadMemoryBank()"
+                    style="padding: 1.5rem 3rem; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); border: none; border-radius: 8px; color: white; font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3);">
+                    🚀 Download Memory Bank (.md)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <section id="features" class="homepage-section features-section">
+        <div class="section-label">// What We Offer</div>
+        <h2 class="section-title">Powerful Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3 class="feature-title">Smart Blueprinting</h3>
+                <p class="feature-description">Generate complete technical blueprints from a single idea. AI-powered
+                    architecture decisions tailored to your project.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3 class="feature-title">6-Pillar Analysis</h3>
+                <p class="feature-description">Comprehensive feasibility analysis covering market, technical, financial,
+                    and competitive dimensions.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3 class="feature-title">Context-Aware AI</h3>
+                <p class="feature-description">Zero agent drift with complete context preservation. Every prompt is
+                    precision-engineered.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">User Flow Mapping</h3>
+                <p class="feature-description">Visual user journey architecture with interactive flow diagrams for
+                    better UX planning.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📋</div>
+                <h3 class="feature-title">Development Roadmap</h3>
+                <p class="feature-description">Auto-generated development roadmap with prioritized tasks and
+                    sprint-ready task board.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <h3 class="feature-title">Memory Bank Export</h3>
+                <p class="feature-description">Export your entire project context as .md files ready for Claude, Cursor,
+                    or any AI agent.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platforms Section -->
+    <section id="platforms" class="homepage-section platforms-section">
+        <div class="section-label">// Seamless Integration</div>
+        <h2 class="section-title">Supported Platforms</h2>
+        <p
+            style="color: var(--text-secondary); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+            Export your blueprints to any vibe coding platform. Our Memory Bank format works seamlessly with:
+        </p>
+        <div class="platforms-logos">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg"
+                alt="VS Code" title="VS Code" class="platform-logo">
+            <img src="https://cursor.sh/brand/icon.svg"
+                onerror="this.src='https://placehold.co/40x40/black/white?text=Cursor'" alt="Cursor" title="Cursor"
+                class="platform-logo" style="filter: invert(1);">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Claude_AI_logo.svg" alt="Claude"
+                title="Claude" class="platform-logo" style="background: white; border-radius: 4px; padding: 2px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Repl.it_logo.svg" alt="Replit" title="Replit"
+                class="platform-logo">
+            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub Codespaces"
+                title="GitHub Codespaces" class="platform-logo" style="filter: invert(1);">
+            <img src="https://windsurf.codeium.com/logo.svg"
+                onerror="this.src='https://placehold.co/40x40/black/white?text=Windsurf'" alt="Windsurf"
+                title="Windsurf" class="platform-logo">
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p class="footer-text">© 2026 <span>Vibe_Pilot</span>. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/background.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

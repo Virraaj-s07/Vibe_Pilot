@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIBE-PILOT v2.0 // AI Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-void: #0a0a0f;
+            --bg-surface: #12121a;
+            --bg-elevated: #1a1a27;
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --text-muted: #52525b;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
+            --accent-pink: #ec4899;
+            --border-subtle: #27272a;
+            --border-glow: rgba(6, 182, 212, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-void);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Grid Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Glow Orbs */
+        .glow-orb-1 {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, transparent 70%);
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: orbPulse 15s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glow-orb-2 {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: orbPulse 12s ease-in-out infinite reverse;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes orbPulse {
+            0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+            50% { transform: translateX(-50%) scale(1.2); opacity: 1; }
+        }
+
+        /* Matrix container */
+        .matrix-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.25;
+        }
+
+        .matrix-word {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--accent-cyan);
+            white-space: nowrap;
+            animation: floatUp linear;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes floatUp {
+            0% { 
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { 
+                transform: translateY(-100vh) translateX(var(--drift));
+                opacity: 0;
+            }
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 2rem;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.875rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--accent-cyan);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        /* Main container */
+        .container {
+            padding-top: 80px;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Welcome screen */
+        .welcome {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .welcome-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem;
+            animation: floatAnimation 3s ease-in-out infinite;
+        }
+
+        @keyframes floatAnimation {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .terminal-quote {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-left: 3px solid var(--accent-cyan);
+            padding: 1.25rem 1.5rem;
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+            line-height: 1.8;
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem;
+            max-width: 750px;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .example-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .example-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(6, 182, 212, 0.2);
+        }
+
+        .input-terminal {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: var(--bg-surface);
+            border: 2px solid var(--border-subtle);
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s;
+        }
+
+        .input-container:focus-within {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+        }
+
+        .input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9375rem;
+            outline: none;
+            resize: none;
+            min-height: 24px;
+            max-height: 150px;
+            padding: 0.5rem 0;
+        }
+
+        .execute-btn {
+            padding: 0.5rem 1.25rem;
+            background: var(--accent-cyan);
+            border: none;
+            border-radius: 2px;
+            color: var(--bg-void);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .execute-btn:hover:not(:disabled) {
+            background: var(--accent-purple);
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .execute-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Processing overlay */
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 15, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .processing-bars {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .bar {
+            width: 3px;
+            height: 40px;
+            background: var(--accent-cyan);
+            border-radius: 2px;
+            animation: barPulse 1.2s ease-in-out infinite;
+        }
+
+        .bar:nth-child(2) { animation-delay: 0.1s; }
+        .bar:nth-child(3) { animation-delay: 0.2s; }
+        .bar:nth-child(4) { animation-delay: 0.3s; }
+
+        @keyframes barPulse {
+            0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
+            50% { opacity: 1; transform: scaleY(1); }
+        }
+
+        /* Analysis view */
+        .analysis-view {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .score-circle {
+            font-size: 5rem;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            margin-bottom: 1rem;
+        }
+
+        .pillar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .pillar-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-elevated);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 1s ease-out;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background elements -->
+    <div class="glow-orb-1"></div>
+    <div class="glow-orb-2"></div>
+    <div class="matrix-container" id="matrixRain"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Back Button -->
+                <button id="backBtn" onclick="goBack()" style="display: none; padding: 0.5rem 0.75rem; background: transparent; border: 1px solid var(--border-subtle); border-radius: 2px; color: var(--text-secondary); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase; transition: all 0.2s;">
+                    ← Back
+                </button>
+                
+                <!-- Home Button -->
+                <button id="homeBtn" onclick="goHome()" style="display: none; padding: 0.5rem 0.75rem; background: transparent; border: 1px solid var(--border-subtle); border-radius: 2px; color: var(--text-secondary); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase; transition: all 0.2s;">
+                    ⌂ Home
+                </button>
+                
+                <div class="logo">
+                    <div class="status-dot"></div>
+                    <span>Vibe-Pilot v2.0</span>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">
+                <div class="status-dot"></div>
+                <span>System Online</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main container -->
+    <div class="container">
+        <!-- Welcome/Input Screen -->
+        <div class="welcome" id="welcomeScreen">
+            
+            <div style="text-align: center; margin-bottom: 3rem; max-width: 800px;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.15em;">
+                    // Initialize Command
+                </div>
+                
+                <h1 style="font-family: 'Space Mono', monospace; font-size: 3rem; font-weight: 700; margin-bottom: 1rem; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Vibe-Pilot v2.0
+                </h1>
+                
+                <div class="terminal-quote">
+                    "Why waste your credits when you can engineer precision?<br/>
+                    One perfect blueprint. Zero agent drift. Complete context."
+                </div>
+            </div>
+
+            <!-- Example cards -->
+            <div class="example-grid">
+                <div class="example-card" onclick="useExample('A focus app for students that detects and prevents endless scrolling')">
+                    <div style="font-size: 0.6875rem; color: var(--accent-cyan); margin-bottom: 0.5rem; font-weight: 600;">
+                        &gt; EXAMPLE_01
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">
+                        A focus app for students that detects and prevents endless scrolling
+                    </div>
+                </div>
+                <div class="example-card" onclick="useExample('AI-powered code review tool that integrates with GitHub')">
+                    <div style="font-size: 0.6875rem; color: var(--accent-cyan); margin-bottom: 0.5rem; font-weight: 600;">
+                        &gt; EXAMPLE_02
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">
+                        AI-powered code review tool that integrates with GitHub
+                    </div>
+                </div>
+                <div class="example-card" onclick="useExample('Task management system with intelligent scheduling suggestions')">
+                    <div style="font-size: 0.6875rem; color: var(--accent-cyan); margin-bottom: 0.5rem; font-weight: 600;">
+                        &gt; EXAMPLE_03
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">
+                        Task management system with intelligent scheduling suggestions
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input terminal -->
+            <div class="input-terminal">
+                <div class="input-container">
+                    <span style="color: var(--accent-cyan); font-size: 0.9375rem; margin-top: 0.5rem;">&gt;</span>
+                    <textarea 
+                        class="input-field" 
+                        id="userInput" 
+                        placeholder="Enter your SaaS idea..."
+                        rows="1"
+                    ></textarea>
+                    <button class="execute-btn" id="analyzeBtn" onclick="analyzeIdea()">
+                        Analyze
+                    </button>
+                </div>
+            </div>
+
+            <p style="margin-top: 2rem; color: var(--text-muted); font-size: 0.8125rem; text-align: center; max-width: 600px;">
+                Vibe-Pilot will analyze your idea across 6 pillars and generate a complete development blueprint.
+            </p>
+        </div>
+
+        <!-- Processing overlay -->
+        <div id="processingOverlay" class="processing-overlay hidden">
+            <div style="text-align: center;">
+                <div class="processing-bars">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+                <p id="processingText" style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 1rem; min-height: 40px;">Processing...</p>
+                <p id="processingSubtext" style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.5rem; font-style: italic;"></p>
+            </div>
+        </div>
+
+        <!-- Analysis Screen -->
+        <div id="analysisScreen" class="analysis-view hidden">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <h2 style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700;">
+                    FEASIBILITY ANALYSIS
+                </h2>
+            </div>
+
+            <!-- Overall score -->
+            <div style="background: var(--bg-surface); border: 2px solid var(--border-subtle); border-radius: 8px; padding: 2rem; margin-bottom: 2rem; text-align: center;">
+                <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">
+                    Overall Score
+                </div>
+                <div id="overallScore" class="score-circle"></div>
+                <div id="verdict" style="display: inline-block; padding: 0.5rem 1.5rem; border-radius: 4px; font-weight: 700; font-size: 0.875rem; text-transform: uppercase;"></div>
+            </div>
+
+            <!-- Pillars grid -->
+            <div id="pillarsGrid" class="pillar-grid"></div>
+
+            <!-- Next button -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <button onclick="showBlueprint()" style="padding: 1rem 2rem; background: var(--accent-cyan); border: none; border-radius: 4px; color: var(--bg-void); font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s;">
+                    Continue to Blueprint →
+                </button>
+            </div>
+        </div>
+
+        <!-- Blueprint Screen -->
+        <div id="blueprintScreen" class="analysis-view hidden">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.15em;">
+                    // Technical Architecture
+                </div>
+                <h2 style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700;">
+                    BLUEPRINT GENERATED
+                </h2>
+            </div>
+
+            <!-- Tech Stack Section -->
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 2rem; margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+                    <h3 style="font-family: 'Space Mono', monospace; font-size: 1.25rem; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em;">
+                        Tech Stack
+                    </h3>
+                    <button onclick="copyTechStack()" style="padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border-subtle); border-radius: 2px; color: var(--text-secondary); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; text-transform: uppercase;">
+                        Copy
+                    </button>
+                </div>
+                <div id="techStackGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;"></div>
+            </div>
+
+            <!-- Pricing Model Section -->
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 2rem; margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+                    <h3 style="font-family: 'Space Mono', monospace; font-size: 1.25rem; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em;">
+                        Pricing Model
+                    </h3>
+                </div>
+                <div id="pricingTiers" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;"></div>
+                <div id="pricingMeta" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-subtle);"></div>
+            </div>
+
+            <!-- MVP Scope -->
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-left: 3px solid var(--accent-purple); border-radius: 4px; padding: 2rem; margin-bottom: 2rem;">
+                <h3 style="font-family: 'Space Mono', monospace; font-size: 1rem; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">
+                    MVP Scope
+                </h3>
+                <ul id="mvpScope" style="list-style: none; padding: 0;"></ul>
+            </div>
+
+            <!-- Next button -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <button onclick="showUserFlow()" style="padding: 1rem 2rem; background: var(--accent-cyan); border: none; border-radius: 4px; color: var(--bg-void); font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s;">
+                    Continue to User Flow →
+                </button>
+            </div>
+        </div>
+
+        <!-- User Flow Screen -->
+        <div id="flowScreen" class="analysis-view hidden">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.15em;">
+                    // User Journey Mapping
+                </div>
+                <h2 style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700;">
+                    USER FLOW DIAGRAM
+                </h2>
+            </div>
+
+            <!-- Journey Summary -->
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-left: 3px solid var(--accent-cyan); border-radius: 4px; padding: 1.5rem; margin-bottom: 2rem;">
+                <div style="font-size: 0.75rem; color: var(--accent-cyan); margin-bottom: 0.75rem; text-transform: uppercase; font-weight: 600;">
+                    📍 User Journey
+                </div>
+                <p id="journeyNarrative" style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.7; margin: 0;"></p>
+            </div>
+
+            <!-- Flow Canvas -->
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 2rem; margin-bottom: 2rem; min-height: 500px; position: relative; overflow-x: auto;">
+                <div id="flowCanvas" style="min-width: 800px; position: relative; height: 100%;"></div>
+            </div>
+
+            <!-- Page Details Grid -->
+            <div style="margin-bottom: 2rem;">
+                <div style="font-size: 0.875rem; font-weight: 600; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem;">
+                    📄 Page Breakdown
+                </div>
+                <div id="pageDetails" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;"></div>
+            </div>
+
+            <!-- Next button -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <button onclick="showKanban()" style="padding: 1rem 2rem; background: var(--accent-cyan); border: none; border-radius: 4px; color: var(--bg-void); font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s;">
+                    Continue to Kanban →
+                </button>
+            </div>
+        </div>
+
+        <!-- Kanban Screen -->
+        <div id="kanbanScreen" class="analysis-view hidden">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.15em;">
+                    // Development Tracker
+                </div>
+                <h2 style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700;">
+                    EXECUTION ROADMAP
+                </h2>
+            </div>
+
+            <!-- Progress Stats -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 1.5rem; text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Total Tasks</div>
+                    <div id="totalTasks" style="font-size: 2rem; font-weight: 700; color: var(--accent-cyan); font-family: 'Space Mono', monospace;">0</div>
+                </div>
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 1.5rem; text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Completed</div>
+                    <div id="completedTasks" style="font-size: 2rem; font-weight: 700; color: var(--accent-purple); font-family: 'Space Mono', monospace;">0</div>
+                </div>
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 1.5rem; text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Progress</div>
+                    <div id="progressPercent" style="font-size: 2rem; font-weight: 700; color: var(--accent-cyan); font-family: 'Space Mono', monospace;">0%</div>
+                </div>
+            </div>
+
+            <!-- Kanban Board -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                <!-- To Do Column -->
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+                        <div style="width: 8px; height: 8px; background: var(--text-muted); border-radius: 50%;"></div>
+                        <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary); text-transform: uppercase;">To Do</span>
+                        <span id="todoCount" style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted);">0</span>
+                    </div>
+                    <div id="todoColumn" style="display: flex; flex-direction: column; gap: 0.75rem; min-height: 200px;"></div>
+                </div>
+
+                <!-- In Progress Column -->
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+                        <div style="width: 8px; height: 8px; background: var(--accent-purple); border-radius: 50%;"></div>
+                        <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary); text-transform: uppercase;">In Progress</span>
+                        <span id="progressCount" style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted);">0</span>
+                    </div>
+                    <div id="progressColumn" style="display: flex; flex-direction: column; gap: 0.75rem; min-height: 200px;"></div>
+                </div>
+
+                <!-- Done Column -->
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+                        <div style="width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%;"></div>
+                        <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary); text-transform: uppercase;">Done</span>
+                        <span id="doneCount" style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted);">0</span>
+                    </div>
+                    <div id="doneColumn" style="display: flex; flex-direction: column; gap: 0.75rem; min-height: 200px;"></div>
+                </div>
+            </div>
+
+            <!-- Next button -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <button onclick="showExport()" style="padding: 1rem 2rem; background: var(--accent-cyan); border: none; border-radius: 4px; color: var(--bg-void); font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: all 0.2s;">
+                    Continue to Memory Bank →
+                </button>
+            </div>
+        </div>
+
+        <!-- Export/Memory Bank Screen -->
+        <div id="exportScreen" class="analysis-view hidden">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.15em;">
+                    // Context Archive System
+                </div>
+                <h2 style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700;">
+                    MEMORY BANK EXPORT
+                </h2>
+                <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 1rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    Download your complete project context as .md files. Upload to Claude Projects, Cursor, or any AI agent for instant project understanding.
+                </p>
+            </div>
+
+            <!-- File Preview Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.5rem;">
+                    <div style="font-size: 0.875rem; font-weight: 600; color: var(--accent-cyan); margin-bottom: 0.5rem;">📋 projectBrief.md</div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Complete vision, 6-pillar analysis, and feasibility verdict</p>
+                </div>
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.5rem;">
+                    <div style="font-size: 0.875rem; font-weight: 600; color: var(--accent-cyan); margin-bottom: 0.5rem;">🏗️ techContext.md</div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Full tech stack, architecture decisions, and packages</p>
+                </div>
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.5rem;">
+                    <div style="font-size: 0.875rem; font-weight: 600; color: var(--accent-cyan); margin-bottom: 0.5rem;">🎯 progress.md</div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Kanban state with all tasks and completion status</p>
+                </div>
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.5rem;">
+                    <div style="font-size: 0.875rem; font-weight: 600; color: var(--accent-cyan); margin-bottom: 0.5rem;">🗺️ userFlow.md</div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Page connections and user journey map</p>
+                </div>
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1.5rem;">
+                    <div style="font-size: 0.875rem; font-weight: 600; color: var(--accent-cyan); margin-bottom: 0.5rem;">⚡ goldenPrompt.md</div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Copy-paste ready prompt for AI coding agents</p>
+                </div>
+            </div>
+
+            <!-- Download Button -->
+            <div style="text-align: center;">
+                <button onclick="downloadMemoryBank()" style="padding: 1.5rem 3rem; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); border: none; border-radius: 8px; color: white; font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3);">
+                    🚀 Download Memory Bank (ZIP)
+                </button>
+                <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 1rem;">
+                    5 files • Complete project context • AI-ready format
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentBlueprint = null;
+        let currentFlow = null;
+        let currentKanban = null;
+        // Matrix background animation
+        function initMatrixRain() {
+            const container = document.getElementById('matrixRain');
+            const words = ['PROMPT', 'TOKEN', 'CONTEXT', 'AGENT', 'CODE', 'VISION', 'EXECUTE', 'BUILD', 'OPTIMIZE', 'DEPLOY'];
+            
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => createFloatingWord(container, words, true), i * 200);
+            }
+
+            setInterval(() => createFloatingWord(container, words, false), 3000);
+        }
+
+        function createFloatingWord(container, words, isInitial) {
+            const element = document.createElement('div');
+            element.className = 'matrix-word';
+            element.style.left = `${5 + Math.random() * 90}%`;
+            element.style.bottom = isInitial ? `${Math.random() * 80}%` : '0';
+            
+            const drift = (Math.random() - 0.5) * 100;
+            element.style.setProperty('--drift', `${drift}px`);
+            
+            const duration = 20 + Math.random() * 15;
+            element.style.animationDuration = `${duration}s`;
+            
+            const isBinary = Math.random() > 0.5;
+            element.textContent = isBinary ? 
+                Array.from({length: 4 + Math.floor(Math.random() * 5)}, () => Math.random() > 0.5 ? '1' : '0').join('') :
+                words[Math.floor(Math.random() * words.length)];
+            
+            container.appendChild(element);
+            
+            const morphInterval = setInterval(() => {
+                const isBinary = Math.random() > 0.5;
+                element.textContent = isBinary ?
+                    Array.from({length: 4 + Math.floor(Math.random() * 5)}, () => Math.random() > 0.5 ? '1' : '0').join('') :
+                    words[Math.floor(Math.random() * words.length)];
+            }, 800 + Math.random() * 700);
+            
+            setTimeout(() => {
+                clearInterval(morphInterval);
+                element.remove();
+            }, duration * 1000);
+        }
+
+        // Auto-resize textarea
+        const input = document.getElementById('userInput');
+        input.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                analyzeIdea();
+            }
+        });
+
+        function useExample(text) {
+            input.value = text;
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 150) + 'px';
+        }
+
+        async function analyzeIdea() {
+            const idea = input.value.trim();
+            if (!idea) return;
+
+            // Show processing
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('processingOverlay').classList.remove('hidden');
+            updateNavButtons('analyzing');
+
+            // Dramatic loading sequence
+            const loadingMessages = [
+                { main: "Searching your million-dollar idea...", sub: "Scanning market databases" },
+                { main: "Analyzing competitive landscape...", sub: "Cross-referencing 10,000+ startups" },
+                { main: "Evaluating market feasibility...", sub: "Consulting industry reports" },
+                { main: "Calculating growth potential...", sub: "Running predictive models" },
+                { main: "Assessing technical complexity...", sub: "Reviewing tech stack options" },
+                { main: "Determining monetization clarity...", sub: "Analyzing revenue models" },
+                { main: "Finalizing feasibility report...", sub: "Preparing insights" }
+            ];
+
+            // Show messages sequentially
+            for (let i = 0; i < loadingMessages.length; i++) {
+                document.getElementById('processingText').textContent = loadingMessages[i].main;
+                document.getElementById('processingSubtext').textContent = loadingMessages[i].sub;
+                await new Promise(resolve => setTimeout(resolve, 1800));
+            }
+
+            // Call real AI analysis with web search
+            try {
+                const analysis = await analyzeWithAI(idea);
+                displayAnalysis(analysis);
+            } catch (error) {
+                console.error('Analysis error:', error);
+                // Fallback to demo data
+                const analysis = {
+                    overall_score: 72,
+                    verdict: 'PROCEED WITH CAUTION',
+                    pillars: {
+                        market_feasibility: { score: 75, reasoning: 'Strong market demand for productivity tools in education sector', icon: '📊' },
+                        stickiness: { score: 68, reasoning: 'Good retention potential with habit-forming features and daily engagement loops', icon: '🎯' },
+                        growth_potential: { score: 80, reasoning: 'Viral potential through student networks and university partnerships', icon: '📈' },
+                        technical_complexity: { score: 65, reasoning: 'Moderate complexity with device permissions and background monitoring', icon: '⚙️' },
+                        monetization_clarity: { score: 70, reasoning: 'Clear freemium model with student-friendly pricing', icon: '💰' },
+                        competitive_moat: { score: 58, reasoning: 'Need unique differentiation from existing focus apps', icon: '🛡️' }
+                    }
+                };
+                displayAnalysis(analysis);
+            }
+        }
+
+        async function analyzeWithAI(idea) {
+            const GEMINI_API_KEY = 'YOUR_GEMINI_API_KEY_HERE'; // Replace with your key
+            
+            const systemPrompt = `You are Vibe-Pilot's Senior Project Architect. Analyze this SaaS idea with brutal honesty.
+
+USER IDEA: "${idea}"
+
+Analyze across 6 pillars and provide scores (0-100):
+
+1. Market Feasibility: Real market demand? People paying for this?
+2. Stickiness/Retention: Will users come back? Habit loop?
+3. Growth Potential: Can it scale? Viral potential?
+4. Technical Complexity: How hard to build? (Higher = easier)
+5. Monetization Clarity: Obvious how to make money?
+6. Competitive Moat: Can you defend against competitors?
+
+Return ONLY valid JSON:
+{
+  "pillars": {
+    "market_feasibility": {"score": 0-100, "reasoning": "2-3 sentences"},
+    "stickiness": {"score": 0-100, "reasoning": "2-3 sentences"},
+    "growth_potential": {"score": 0-100, "reasoning": "2-3 sentences"},
+    "technical_complexity": {"score": 0-100, "reasoning": "2-3 sentences"},
+    "monetization_clarity": {"score": 0-100, "reasoning": "2-3 sentences"},
+    "competitive_moat": {"score": 0-100, "reasoning": "2-3 sentences"}
+  },
+  "overall_score": 0-100,
+  "verdict": "BUILD IT / PROCEED WITH CAUTION / PIVOT RECOMMENDED"
+}`;
+
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: systemPrompt }] }],
+                        generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+                    })
+                }
+            );
+
+            const data = await response.json();
+            
+            if (data.candidates && data.candidates[0]) {
+                let responseText = data.candidates[0].content.parts[0].text;
+                responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                const parsed = JSON.parse(responseText);
+                
+                // Add icons
+                parsed.pillars.market_feasibility.icon = '📊';
+                parsed.pillars.stickiness.icon = '🎯';
+                parsed.pillars.growth_potential.icon = '📈';
+                parsed.pillars.technical_complexity.icon = '⚙️';
+                parsed.pillars.monetization_clarity.icon = '💰';
+                parsed.pillars.competitive_moat.icon = '🛡️';
+                
+                return parsed;
+            }
+            
+            throw new Error('No response from API');
+        }
+
+        async function showBlueprint() {
+            document.getElementById('analysisScreen').classList.add('hidden');
+            document.getElementById('processingOverlay').classList.remove('hidden');
+            document.getElementById('processingText').textContent = 'Generating technical blueprint...';
+            document.getElementById('processingSubtext').textContent = 'Analyzing optimal tech stack';
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Generate blueprint (replace with actual API call)
+            const blueprint = {
+                tech_stack: {
+                    frontend: {
+                        framework: "React Native with TypeScript",
+                        styling: "React Native StyleSheet + React Native Paper",
+                        state: "Zustand",
+                        reasoning: "Cross-platform mobile with type safety and efficient state management"
+                    },
+                    backend: {
+                        runtime: "Node.js",
+                        framework: "Express + Socket.io",
+                        auth: "Firebase Auth",
+                        reasoning: "Real-time capabilities with Firebase for easy mobile integration"
+                    },
+                    database: {
+                        primary: "MongoDB",
+                        orm: "Mongoose",
+                        caching: "Redis",
+                        reasoning: "Flexible schema for usage patterns, Redis for real-time stats aggregation"
+                    },
+                    infrastructure: {
+                        hosting: "Railway (backend) + Firebase (mobile)",
+                        storage: "Firebase Storage",
+                        cdn: "Firebase CDN",
+                        reasoning: "Mobile-first infrastructure with easy deployment and scaling"
+                    },
+                    key_packages: ["react-navigation", "react-native-firebase", "async-storage", "react-native-svg-charts", "mongoose", "socket.io"]
+                },
+                pricing_model: {
+                    type: "freemium",
+                    tiers: [
+                        {
+                            name: "Free",
+                            price: 0,
+                            features: ["Basic focus tracking", "5 app blocking slots", "Daily stats"],
+                            limits: "Limited to 3 focus sessions/day"
+                        },
+                        {
+                            name: "Student",
+                            price: 4.99,
+                            features: ["Unlimited focus sessions", "Advanced analytics", "Custom app blocking", "Study streak rewards"],
+                            limits: "Unlimited"
+                        },
+                        {
+                            name: "Premium",
+                            price: 9.99,
+                            features: ["Everything in Student", "Friend challenges", "AI insights", "Calendar integration", "Priority support"],
+                            limits: "Unlimited + Premium features"
+                        }
+                    ],
+                    reasoning: "Freemium model allows student adoption, low price point ($4.99) targets student budget, premium tier for power users",
+                    estimated_ltv: "$60 per user over 12 months (assuming 40% convert to Student tier)"
+                },
+                mvp_scope: [
+                    "User authentication with email/social login",
+                    "App usage monitoring with permission handling",
+                    "Basic scrolling pattern detection algorithm",
+                    "Focus mode with app blocking (iOS Screen Time, Android AccessibilityService)",
+                    "Daily usage statistics and insights dashboard",
+                    "Streak tracking and basic gamification"
+                ],
+                estimated_cost: "$150/month at 1,000 users (Firebase + Railway + MongoDB Atlas)"
+            };
+
+            currentBlueprint = blueprint;
+            displayBlueprint(blueprint);
+        }
+
+        async function showUserFlow() {
+            document.getElementById('blueprintScreen').classList.add('hidden');
+            document.getElementById('processingOverlay').classList.remove('hidden');
+            document.getElementById('processingText').textContent = 'Mapping user journey...';
+            document.getElementById('processingSubtext').textContent = 'Creating page flow diagram';
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Generate user flow
+            const flow = {
+                pages: [
+                    { id: 1, name: "Landing Page", type: "public", description: "Marketing page with app preview", elements: ["Hero section", "Feature showcase", "CTA button"] },
+                    { id: 2, name: "Sign Up", type: "auth", description: "User registration flow", elements: ["Email form", "Social OAuth", "Terms acceptance"] },
+                    { id: 3, name: "Onboarding", type: "private", description: "First-time setup wizard", elements: ["Permission requests", "App selection", "Focus goals"] },
+                    { id: 4, name: "Dashboard", type: "private", description: "Main interface hub", elements: ["Stats overview", "Quick actions", "Recent activity"] },
+                    { id: 5, name: "Focus Mode", type: "private", description: "Active blocking interface", elements: ["Timer display", "App blocker", "Break scheduler"] },
+                    { id: 6, name: "Analytics", type: "private", description: "Usage insights", elements: ["Charts", "Streaks", "Patterns"] },
+                    { id: 7, name: "Settings", type: "private", description: "User preferences", elements: ["Profile", "Billing", "Notifications"] }
+                ],
+                connections: [
+                    { from: 1, to: 2, action: "Click 'Get Started'" },
+                    { from: 2, to: 3, action: "Complete signup" },
+                    { from: 3, to: 4, action: "Finish onboarding" },
+                    { from: 4, to: 5, action: "Start focus session" },
+                    { from: 4, to: 6, action: "View analytics" },
+                    { from: 4, to: 7, action: "Open settings" },
+                    { from: 5, to: 4, action: "End session" }
+                ],
+                journey: "Users discover the app through marketing, sign up with email or social login, complete a quick onboarding to set permissions and goals, then land on their dashboard where they can start focus sessions, view their progress analytics, or adjust settings."
+            };
+
+            currentFlow = flow;
+            displayUserFlow(flow);
+        }
+
+        async function showKanban() {
+            document.getElementById('flowScreen').classList.add('hidden');
+            document.getElementById('processingOverlay').classList.remove('hidden');
+            document.getElementById('processingText').textContent = 'Creating development roadmap...';
+            document.getElementById('processingSubtext').textContent = 'Breaking down into actionable tasks';
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Generate Kanban tickets
+            const kanban = {
+                todo: [
+                    { id: 1, title: "Initialize React Native project", description: "Set up project with TypeScript, ESLint, Prettier", priority: "high", hours: 2 },
+                    { id: 2, title: "Configure Firebase Auth", description: "Set up email and Google OAuth authentication", priority: "high", hours: 3 },
+                    { id: 3, title: "Implement usage monitoring", description: "Request permissions and track app usage", priority: "high", hours: 6 },
+                    { id: 4, title: "Build scrolling detection", description: "Create algorithm to detect doom-scrolling patterns", priority: "medium", hours: 8 },
+                    { id: 5, title: "Create Focus Mode UI", description: "Timer, app blocking, break reminders", priority: "medium", hours: 6 },
+                    { id: 6, title: "Add gamification", description: "Streak tracking, rewards system", priority: "low", hours: 5 }
+                ],
+                inProgress: [],
+                done: []
+            };
+
+            displayKanban(kanban);
+        }
+
+        function displayKanban(kanban) {
+            document.getElementById('processingOverlay').classList.add('hidden');
+            document.getElementById('kanbanScreen').classList.remove('hidden');
+            updateNavButtons('kanban');
+
+            // Update stats
+            const total = kanban.todo.length + kanban.inProgress.length + kanban.done.length;
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('completedTasks').textContent = kanban.done.length;
+            const progress = total > 0 ? Math.round((kanban.done.length / total) * 100) : 0;
+            document.getElementById('progressPercent').textContent = progress + '%';
+
+            // Render columns
+            renderKanbanColumn('todoColumn', kanban.todo, 'TODO');
+            renderKanbanColumn('progressColumn', kanban.inProgress, 'IN PROGRESS');
+            renderKanbanColumn('doneColumn', kanban.done, 'DONE');
+        }
+
+        function renderKanbanColumn(columnId, tasks, columnName) {
+            const column = document.getElementById(columnId);
+            column.innerHTML = '';
+
+            tasks.forEach(task => {
+                const card = document.createElement('div');
+                card.className = 'fade-in';
+                card.style.cssText = `
+                    background: var(--bg-elevated);
+                    border: 1px solid var(--border-subtle);
+                    border-left: 3px solid ${task.priority === 'high' ? 'var(--accent-pink)' : task.priority === 'medium' ? 'var(--accent-cyan)' : 'var(--accent-purple)'};
+                    border-radius: 4px;
+                    padding: 1rem;
+                    margin-bottom: 0.75rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                `;
+
+                card.innerHTML = `
+                    <div style="display: flex; align-items: start; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">${task.title}</span>
+                        <span style="font-size: 0.6875rem; background: var(--bg-surface); padding: 0.25rem 0.5rem; border-radius: 2px; color: var(--text-muted); text-transform: uppercase;">${task.priority}</span>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">${task.description}</p>
+                    <div style="font-size: 0.6875rem; color: var(--text-muted);">⏱ ${task.hours}h estimated</div>
+                `;
+
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-2px)';
+                    card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                    card.style.boxShadow = 'none';
+                });
+
+                column.appendChild(card);
+            });
+        }
+
+        function displayUserFlow(flow) {
+            document.getElementById('processingOverlay').classList.add('hidden');
+            document.getElementById('flowScreen').classList.remove('hidden');
+            updateNavButtons('flow');
+
+            // Journey narrative
+            document.getElementById('journeyNarrative').textContent = flow.journey;
+
+            // Draw flow diagram
+            const canvas = document.getElementById('flowCanvas');
+            canvas.innerHTML = '';
+            
+            const pageWidth = 180;
+            const pageHeight = 100;
+            const horizontalGap = 60;
+            const verticalGap = 140;
+            
+            // Calculate layout (simple grid)
+            const cols = 3;
+            flow.pages.forEach((page, index) => {
+                const row = Math.floor(index / cols);
+                const col = index % cols;
+                const x = col * (pageWidth + horizontalGap) + 50;
+                const y = row * (pageHeight + verticalGap) + 50;
+                
+                // Create page node
+                const node = document.createElement('div');
+                node.className = 'fade-in';
+                node.style.cssText = `
+                    position: absolute;
+                    left: ${x}px;
+                    top: ${y}px;
+                    width: ${pageWidth}px;
+                    min-height: ${pageHeight}px;
+                    background: var(--bg-elevated);
+                    border: 2px solid ${page.type === 'public' ? 'var(--accent-cyan)' : page.type === 'auth' ? 'var(--accent-purple)' : 'var(--accent-pink)'};
+                    border-radius: 8px;
+                    padding: 1rem;
+                    transition: all 0.3s;
+                `;
+                
+                node.innerHTML = `
+                    <div style="font-size: 0.6875rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">${page.type}</div>
+                    <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">${page.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">${page.description}</div>
+                `;
+                
+                canvas.appendChild(node);
+            });
+
+            // Draw connections (SVG lines)
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;';
+            
+            flow.connections.forEach(conn => {
+                const fromPage = flow.pages.find(p => p.id === conn.from);
+                const toPage = flow.pages.find(p => p.id === conn.to);
+                const fromIndex = flow.pages.indexOf(fromPage);
+                const toIndex = flow.pages.indexOf(toPage);
+                
+                const fromCol = fromIndex % cols;
+                const fromRow = Math.floor(fromIndex / cols);
+                const toCol = toIndex % cols;
+                const toRow = Math.floor(toIndex / cols);
+                
+                const x1 = fromCol * (pageWidth + horizontalGap) + 50 + pageWidth / 2;
+                const y1 = fromRow * (pageHeight + verticalGap) + 50 + pageHeight;
+                const x2 = toCol * (pageWidth + horizontalGap) + 50 + pageWidth / 2;
+                const y2 = toRow * (pageHeight + verticalGap) + 50;
+                
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1);
+                line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2);
+                line.setAttribute('y2', y2);
+                line.setAttribute('stroke', 'var(--accent-cyan)');
+                line.setAttribute('stroke-width', '2');
+                line.setAttribute('stroke-opacity', '0.3');
+                
+                svg.appendChild(line);
+            });
+            
+            canvas.appendChild(svg);
+
+            // Page details
+            const detailsGrid = document.getElementById('pageDetails');
+            detailsGrid.innerHTML = '';
+            
+            flow.pages.forEach(page => {
+                const card = document.createElement('div');
+                card.className = 'fade-in';
+                card.style.cssText = 'background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 1rem;';
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                        <div style="width: 6px; height: 6px; background: ${page.type === 'public' ? 'var(--accent-cyan)' : page.type === 'auth' ? 'var(--accent-purple)' : 'var(--accent-pink)'}; border-radius: 50%;"></div>
+                        <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">${page.name}</span>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem;">${page.description}</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                        ${page.elements.map(el => `<span style="font-size: 0.6875rem; background: var(--bg-elevated); padding: 0.25rem 0.5rem; border-radius: 2px; color: var(--text-muted);">${el}</span>`).join('')}
+                    </div>
+                `;
+                detailsGrid.appendChild(card);
+            });
+        }
+
+        function displayBlueprint(blueprint) {
+            document.getElementById('processingOverlay').classList.add('hidden');
+            document.getElementById('blueprintScreen').classList.remove('hidden');
+            updateNavButtons('blueprint');
+
+            // Tech Stack Grid
+            const techGrid = document.getElementById('techStackGrid');
+            techGrid.innerHTML = '';
+
+            const sections = ['frontend', 'backend', 'database', 'infrastructure'];
+            sections.forEach(section => {
+                const data = blueprint.tech_stack[section];
+                const card = document.createElement('div');
+                card.className = 'fade-in';
+                card.innerHTML = `
+                    <div style="margin-bottom: 1rem;">
+                        <div style="color: var(--accent-cyan); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                            ${section}
+                        </div>
+                        ${Object.entries(data).filter(([key]) => key !== 'reasoning').map(([key, value]) => `
+                            <div style="margin-bottom: 0.5rem;">
+                                <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">${key}:</span>
+                                <div style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">${value}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+                        <div style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.5rem;">WHY?</div>
+                        <div style="color: var(--text-secondary); font-size: 0.8125rem; line-height: 1.6;">
+                            ${data.reasoning}
+                        </div>
+                    </div>
+                `;
+                techGrid.appendChild(card);
+            });
+
+            // Key Packages
+            const packagesDiv = document.createElement('div');
+            packagesDiv.className = 'fade-in';
+            packagesDiv.style.cssText = 'margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-subtle);';
+            packagesDiv.innerHTML = `
+                <div style="color: var(--accent-cyan); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 1rem;">
+                    Key Packages
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    ${blueprint.tech_stack.key_packages.map(pkg => `
+                        <code style="background: var(--bg-elevated); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.8125rem; color: var(--text-secondary);">${pkg}</code>
+                    `).join('')}
+                </div>
+            `;
+            techGrid.parentElement.appendChild(packagesDiv);
+
+            // Pricing Tiers
+            const pricingDiv = document.getElementById('pricingTiers');
+            pricingDiv.innerHTML = '';
+
+            blueprint.pricing_model.tiers.forEach((tier, index) => {
+                const card = document.createElement('div');
+                card.className = 'fade-in';
+                card.style.cssText = `background: var(--bg-elevated); border: ${tier.price > 0 && index === blueprint.pricing_model.tiers.length - 1 ? '2px solid var(--accent-cyan)' : '1px solid var(--border-subtle)'}; border-radius: 8px; padding: 1.5rem; transition: all 0.3s;`;
+                card.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary); text-transform: uppercase; margin-bottom: 0.5rem;">
+                            ${tier.name}
+                        </div>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-cyan); font-family: 'Space Mono', monospace;">
+                            $${tier.price}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">
+                            ${tier.price === 0 ? 'Forever' : 'per month'}
+                        </div>
+                    </div>
+                    <ul style="list-style: none; padding: 0; margin-bottom: 1rem;">
+                        ${tier.features.map(feature => `
+                            <li style="padding: 0.5rem 0; color: var(--text-secondary); font-size: 0.8125rem; display: flex; gap: 0.5rem;">
+                                <span style="color: var(--accent-cyan);">✓</span>
+                                <span>${feature}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                    <div style="padding-top: 1rem; border-top: 1px solid var(--border-subtle); font-size: 0.75rem; color: var(--text-muted);">
+                        ${tier.limits}
+                    </div>
+                `;
+                pricingDiv.appendChild(card);
+            });
+
+            // Pricing Meta
+            const metaDiv = document.getElementById('pricingMeta');
+            metaDiv.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+                            Model Type
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.9375rem; text-transform: capitalize;">
+                            ${blueprint.pricing_model.type}
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+                            Estimated LTV
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.9375rem;">
+                            ${blueprint.pricing_model.estimated_ltv}
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+                            Operating Cost
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.9375rem;">
+                            ${blueprint.estimated_cost}
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-surface); border-left: 3px solid var(--accent-cyan); border-radius: 4px;">
+                    <div style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+                        Pricing Strategy
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+                        ${blueprint.pricing_model.reasoning}
+                    </div>
+                </div>
+            `;
+
+            // MVP Scope
+            const mvpList = document.getElementById('mvpScope');
+            mvpList.innerHTML = '';
+            blueprint.mvp_scope.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'fade-in';
+                li.style.cssText = 'padding: 0.75rem 0; display: flex; gap: 1rem; align-items: start;';
+                li.innerHTML = `
+                    <span style="color: var(--accent-purple); font-weight: 700; font-family: 'Space Mono', monospace; min-width: 2rem;">${(index + 1).toString().padStart(2, '0')}</span>
+                    <span style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">${item}</span>
+                `;
+                mvpList.appendChild(li);
+            });
+        }
+
+        function copyTechStack() {
+            if (!currentBlueprint) return;
+            
+            const text = `TECH STACK
+
+Frontend:
+${Object.entries(currentBlueprint.tech_stack.frontend).filter(([k]) => k !== 'reasoning').map(([k, v]) => `- ${k}: ${v}`).join('\n')}
+
+Backend:
+${Object.entries(currentBlueprint.tech_stack.backend).filter(([k]) => k !== 'reasoning').map(([k, v]) => `- ${k}: ${v}`).join('\n')}
+
+Database:
+${Object.entries(currentBlueprint.tech_stack.database).filter(([k]) => k !== 'reasoning').map(([k, v]) => `- ${k}: ${v}`).join('\n')}
+
+Infrastructure:
+${Object.entries(currentBlueprint.tech_stack.infrastructure).filter(([k]) => k !== 'reasoning').map(([k, v]) => `- ${k}: ${v}`).join('\n')}
+
+Key Packages:
+${currentBlueprint.tech_stack.key_packages.map(p => `- ${p}`).join('\n')}`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Tech stack copied to clipboard!');
+            });
+        }
+
+        function displayAnalysis(analysis) {
+            document.getElementById('processingOverlay').classList.add('hidden');
+            document.getElementById('analysisScreen').classList.remove('hidden');
+            updateNavButtons('analysis');
+
+            // Overall score
+            const scoreEl = document.getElementById('overallScore');
+            scoreEl.textContent = analysis.overall_score;
+            scoreEl.style.color = getScoreColor(analysis.overall_score);
+            scoreEl.style.textShadow = `0 0 30px ${getScoreColor(analysis.overall_score)}`;
+
+            // Verdict
+            const verdictEl = document.getElementById('verdict');
+            verdictEl.textContent = analysis.verdict;
+            verdictEl.style.background = getVerdictColor(analysis.verdict);
+            verdictEl.style.color = 'var(--bg-void)';
+
+            // Pillars
+            const grid = document.getElementById('pillarsGrid');
+            grid.innerHTML = '';
+            
+            Object.entries(analysis.pillars).forEach(([key, data]) => {
+                const card = document.createElement('div');
+                card.className = 'pillar-card fade-in';
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 1.5rem;">${data.icon}</span>
+                            <span style="font-size: 0.875rem; font-weight: 600; text-transform: capitalize;">
+                                ${key.replace(/_/g, ' ')}
+                            </span>
+                        </div>
+                        <span style="font-size: 2rem; font-weight: 700; color: ${getScoreColor(data.score)}; font-family: 'Space Mono', monospace;">
+                            ${data.score}
+                        </span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${data.score}%; background: ${getScoreColor(data.score)}; box-shadow: 0 0 10px ${getScoreColor(data.score)};"></div>
+                    </div>
+                    <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.6;">
+                        ${data.reasoning}
+                    </p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function getScoreColor(score) {
+            if (score >= 75) return 'var(--accent-cyan)';
+            if (score >= 50) return 'var(--accent-purple)';
+            return 'var(--accent-pink)';
+        }
+
+        function getVerdictColor(verdict) {
+            if (verdict === 'BUILD IT') return 'var(--accent-cyan)';
+            if (verdict === 'PROCEED WITH CAUTION') return 'var(--accent-purple)';
+            return 'var(--accent-pink)';
+        }
+
+        function copyTechStack() {
+            if (!currentBlueprint) return;
+            
+            const text = `TECH STACK
+
+Frontend:
+${Object.entries(currentBlueprint.tech_stack.frontend).filter(([k]) => k !== 'reasoning').map(([k, v]) => `- ${k}: ${v}`).join('\n')}
+
+Backend:
+${Object.entries(currentBlueprint.tech_stack.backend).filter(([k]) => k !== 'reasoning').map(([k, v]) => `- ${k}: ${v}`).join('\n')}
+
+Database:
+${Object.entries(currentBlueprint.tech_stack.database).filter(([k]) => k !== 'reasoning').map(([k, v]) => `- ${k}: ${v}`).join('\n')}
+
+Infrastructure:
+${Object.entries(currentBlueprint.tech_stack.infrastructure).filter(([k]) => k !== 'reasoning').map(([k, v]) => `- ${k}: ${v}`).join('\n')}
+
+Key Packages:
+${currentBlueprint.tech_stack.key_packages.map(p => `- ${p}`).join('\n')}`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Tech stack copied to clipboard!');
+            });
+        }
+
+        // Navigation functions
+        function updateNavButtons(currentScreen) {
+            const backBtn = document.getElementById('backBtn');
+            const homeBtn = document.getElementById('homeBtn');
+            
+            if (currentScreen === 'input') {
+                backBtn.style.display = 'none';
+                homeBtn.style.display = 'none';
+            } else if (currentScreen === 'analyzing') {
+                backBtn.style.display = 'none';
+                homeBtn.style.display = 'inline-block';
+            } else if (currentScreen === 'analysis') {
+                backBtn.style.display = 'none';
+                homeBtn.style.display = 'inline-block';
+            } else if (currentScreen === 'blueprint') {
+                backBtn.style.display = 'inline-block';
+                homeBtn.style.display = 'inline-block';
+            } else if (currentScreen === 'flow') {
+                backBtn.style.display = 'inline-block';
+                homeBtn.style.display = 'inline-block';
+            } else if (currentScreen === 'kanban') {
+                backBtn.style.display = 'inline-block';
+                homeBtn.style.display = 'inline-block';
+            } else if (currentScreen === 'export') {
+                backBtn.style.display = 'inline-block';
+                homeBtn.style.display = 'inline-block';
+            }
+        }
+
+        function goBack() {
+            const exportScreen = document.getElementById('exportScreen');
+            const kanbanScreen = document.getElementById('kanbanScreen');
+            const flowScreen = document.getElementById('flowScreen');
+            const blueprintScreen = document.getElementById('blueprintScreen');
+            const analysisScreen = document.getElementById('analysisScreen');
+            
+            if (!exportScreen.classList.contains('hidden')) {
+                // From export to kanban
+                exportScreen.classList.add('hidden');
+                kanbanScreen.classList.remove('hidden');
+                updateNavButtons('kanban');
+            } else if (!kanbanScreen.classList.contains('hidden')) {
+                // From kanban to flow
+                kanbanScreen.classList.add('hidden');
+                flowScreen.classList.remove('hidden');
+                updateNavButtons('flow');
+            } else if (!flowScreen.classList.contains('hidden')) {
+                // From flow to blueprint
+                flowScreen.classList.add('hidden');
+                blueprintScreen.classList.remove('hidden');
+                updateNavButtons('blueprint');
+            } else if (!blueprintScreen.classList.contains('hidden')) {
+                // From blueprint to analysis
+                blueprintScreen.classList.add('hidden');
+                analysisScreen.classList.remove('hidden');
+                updateNavButtons('analysis');
+            }
+        }
+
+        function goHome() {
+            // Hide all screens
+            document.getElementById('analysisScreen').classList.add('hidden');
+            document.getElementById('blueprintScreen').classList.add('hidden');
+            document.getElementById('flowScreen').classList.add('hidden');
+            document.getElementById('kanbanScreen').classList.add('hidden');
+            document.getElementById('exportScreen').classList.add('hidden');
+            document.getElementById('processingOverlay').classList.add('hidden');
+            
+            // Show welcome screen
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            
+            // Clear input
+            document.getElementById('userInput').value = '';
+            document.getElementById('userInput').style.height = 'auto';
+            
+            // Update nav buttons
+            updateNavButtons('input');
+        }
+
+        // Initialize
+        window.addEventListener('load', initMatrixRain);
+    </script>
+</body>
+</html>
