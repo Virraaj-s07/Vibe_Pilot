@@ -28,7 +28,7 @@ Vibe Pilot solves this by acting as a pre-flight checklist. It doesn't just "cha
 Ensure you have Node.js 18+ installed. Clone the repository and install dependencies.
 
 ```bash
-git clone [https://github.com/Virraaj-s07/Vibe_Pilot.git](https://github.com/Virraaj-s07/Vibe_Pilot.git)
+git clone <repo-url>
 cd Vibe_Pilot
 npm install
 npm run dev
