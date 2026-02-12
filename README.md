@@ -4,7 +4,8 @@ Vibe Pilot is a project validation and orchestration engine designed for the era
 
 Build for BridgeMind Vibeathon 2026
 
-![Vibe Pilot Interface](homepage.png)
+![Uploading Homepage.png…]()
+
 
 ## The Problem
 
