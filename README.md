@@ -18,7 +18,7 @@ https://vibe-pilot-lz7ejxn65-virraaj-s07s-projects.vercel.app
 
 ## The Problem
 
-Most hackathon projects fail not because of bad code, but because of bad planning. Developers waste hours setting up environments for ideas that haven't been validated against market reality or technical constraints.
+Most projects fail not because of bad code, but because of bad planning. Developers waste hours setting up environments for ideas that haven't been validated against market reality or technical constraints.
 
 Vibe Pilot solves this by acting as a pre-flight checklist. It doesn't just "chat" with you; it aggressively tests your idea against market viability and technical feasibility before a single line of code is written.
 
