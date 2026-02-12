@@ -1,6 +1,6 @@
 # Vibe Pilot
 
-Vibe Pilot is an autonomous project validation engine designed to prevent developers from building dead-end ideas. It analyzes your concept, generates a technical roadmap, and orchestrates the initial execution environment.
+Vibe Pilot is a project validation and orchestration engine designed for the era of Vibe Coding. It takes your raw ideas, runs a deep multi-model analysis, and generates a roadmap to success.
 
 Build for BridgeMind Vibeathon 2026
 
@@ -13,11 +13,10 @@ Most hackathon projects fail not because of bad code, but because of bad plannin
 Vibe Pilot solves this by acting as a pre-flight checklist. It doesn't just "chat" with you; it aggressively tests your idea against market viability and technical feasibility before a single line of code is written.
 
 ## Features
-
-- **Vibe Score Algorithm**: A deterministic 0-100 rating system that evaluates project potential based on complexity, uniqueness, and current trends.
-- **Golden Prompt Injection**: Automatically generates high-fidelity system prompts optimized for modern AI coding agents, ensuring the context window isn't wasted on boilerplate.
-- **Dynamic Roadmap Generation**: Breaks down high-level ideas into execution-ready sprints that agents can consume without hallucination.
-- **Universal Export**: One-click configuration export for VS Code and standard terminal environments.
+- **The Vibe Score:** An algorithmic evaluation of your project's market potential and technical feasibility.
+- **Golden Prompt Generator:** Automatically creates a high-fidelity system prompt tailored for your specific app.
+- **Dynamic Roadmap:** Generates a step-by-step execution plan from MVP to Production.
+- **One-Click Execution:** Bridges the gap between "Idea" and "Terminal" (Optimized for Claude Code).
 
 ## Prerequisites
 
