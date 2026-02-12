@@ -31,5 +31,12 @@ Ensure you have Node.js 18+ installed. Clone the repository and install dependen
 git clone <repo-url>
 cd Vibe_Pilot
 npm install
+```
+
+## Usuage
+
+```bash
 npm run dev
 ```
+
+Open http://localhost:3000 in your browser.
