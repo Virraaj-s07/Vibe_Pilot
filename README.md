@@ -45,11 +45,11 @@ Vibe Pilot solves this by acting as a pre-flight checklist. It doesn't just "cha
 
 ## Visit
 
-- **Check out you idea with Vibe Pilot now**
+- **Check out your idea with Vibe Pilot now**
 https://vibe-pilot-lz7ejxn65-virraaj-s07s-projects.vercel.app
 
 
-## Installation
+## Installation for modifications
 
 Ensure you have Node.js 18+ installed. Clone the repository and install dependencies.
 
