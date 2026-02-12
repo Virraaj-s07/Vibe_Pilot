@@ -9,6 +9,13 @@ Build for BridgeMind Vibeathon 2026
 <img width="1896" height="1079" alt="Blueprint" src="https://github.com/user-attachments/assets/714d2f2b-8f70-4d84-ba64-1e49432d3410" />
 
 
+## Visit
+
+- **Check out your idea with Vibe Pilot now**
+https://vibe-pilot-lz7ejxn65-virraaj-s07s-projects.vercel.app
+
+
+
 ## The Problem
 
 Most hackathon projects fail not because of bad code, but because of bad planning. Developers waste hours setting up environments for ideas that haven't been validated against market reality or technical constraints.
@@ -42,11 +49,6 @@ Vibe Pilot solves this by acting as a pre-flight checklist. It doesn't just "cha
 - [npm](https://www.npmjs.com/) or [pnpm](https://pnpm.io/)
 - A modern web browser
 
-
-## Visit
-
-- **Check out your idea with Vibe Pilot now**
-https://vibe-pilot-lz7ejxn65-virraaj-s07s-projects.vercel.app
 
 
 ## Installation for modifications
