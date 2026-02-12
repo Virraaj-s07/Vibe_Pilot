@@ -29,14 +29,7 @@ Ensure you have Node.js 18+ installed. Clone the repository and install dependen
 
 ```bash
 git clone [https://github.com/Virraaj-s07/Vibe_Pilot.git](https://github.com/Virraaj-s07/Vibe_Pilot.git)
-```
-```bash
 cd Vibe_Pilot
-```
-
-```bash
 npm install
-```
-```bash
 npm run dev
 ```
