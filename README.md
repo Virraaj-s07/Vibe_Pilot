@@ -12,7 +12,7 @@ Build for BridgeMind Vibeathon 2026
 ## Visit
 
 - **Check out your idea with Vibe Pilot now**
-[(https://vibe-pilot-nu.vercel.app)
+https://vibe-pilot-nu.vercel.app
 
 
 ## The Problem
