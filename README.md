@@ -2,6 +2,8 @@
 
 Vibe Pilot is an autonomous project validation engine designed to prevent developers from building dead-end ideas. It analyzes your concept, generates a technical roadmap, and orchestrates the initial execution environment.
 
+Build for Bridge Vibeathon 2026
+
 ![Vibe Pilot Interface](docs/vibe-score.png)
 
 ## The Problem
