@@ -42,6 +42,13 @@ Vibe Pilot solves this by acting as a pre-flight checklist. It doesn't just "cha
 - [npm](https://www.npmjs.com/) or [pnpm](https://pnpm.io/)
 - A modern web browser
 
+
+## Visit
+
+- **Check out you idea with Vibe Pilot now**
+https://vibe-pilot-lz7ejxn65-virraaj-s07s-projects.vercel.app
+
+
 ## Installation
 
 Ensure you have Node.js 18+ installed. Clone the repository and install dependencies.
@@ -53,7 +60,7 @@ npm install
 ```
 
 ## Setup
-1. Create a `.env` file (use `.env.example` as a template) and add your `GEMINI_API_KEY`.
+1. Create a `.env` file (use `.env.example` as a template) and add your `Any_AI_API_Key`.
 2. Start the server:
    ```bash
    npm run dev
