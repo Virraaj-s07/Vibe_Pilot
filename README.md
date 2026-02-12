@@ -6,6 +6,7 @@ Build for BridgeMind Vibeathon 2026
 
 <img width="1897" height="1079" alt="Homepage" src="https://github.com/user-attachments/assets/285e7e50-a1b8-4958-8eea-4d8bea375cdc" />
 
+<img width="1896" height="1079" alt="Blueprint" src="https://github.com/user-attachments/assets/714d2f2b-8f70-4d84-ba64-1e49432d3410" />
 
 
 ## The Problem
@@ -16,8 +17,17 @@ Vibe Pilot solves this by acting as a pre-flight checklist. It doesn't just "cha
 
 ## Features
 - **The Vibe Score:** An algorithmic evaluation of your project's market potential and technical feasibility.
+
+<img width="1899" height="1079" alt="Score" src="https://github.com/user-attachments/assets/6a1ebe4f-40e7-4036-b763-1965baaa4a05" />
+
 - **Golden Prompt Generator:** Automatically creates a high-fidelity system prompt tailored for your specific app.
+
+<img width="1892" height="1079" alt="Prompt" src="https://github.com/user-attachments/assets/6f880316-eec2-4d1e-b8a8-f324ea40c01c" />
+
 - **Dynamic Roadmap:** Generates a step-by-step execution plan from MVP to Production.
+
+<img width="1895" height="1079" alt="Roadmap" src="https://github.com/user-attachments/assets/a4e020a7-db27-4400-be24-fa4151eb7af5" />
+
 - **One-Click Execution:** Bridges the gap between "Idea" and "Terminal" (Optimized for Claude Code).
 
 ## Prerequisites
