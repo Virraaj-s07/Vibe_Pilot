@@ -17,6 +17,12 @@ Vibe Pilot solves this by acting as a pre-flight checklist. It doesn't just "cha
 - **Dynamic Roadmap Generation**: Breaks down high-level ideas into execution-ready sprints that agents can consume without hallucination.
 - **Universal Export**: One-click configuration export for VS Code and standard terminal environments.
 
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18+)
+- [npm](https://www.npmjs.com/) or [pnpm](https://pnpm.io/)
+- A modern web browser
+
 ## Installation
 
 Ensure you have Node.js 18+ installed. Clone the repository and install dependencies.
